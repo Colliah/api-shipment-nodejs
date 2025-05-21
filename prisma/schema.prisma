@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatusEnum {
+  PENDING
+  PROCESSING
+  SHIPPING
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentMethod {
+  COD
+  CREDIT_CARD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Customer {
+  id      String         @id @default(uuid())
+  email   String         @unique
+  name    String
+  details CustomerInfo[]
+  orders  Order[]
+}
+
+model CustomerInfo {
+  id         String   @id @default(uuid())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+  phone      String
+  street     String
+  ward       String
+  district   String
+  city       String
+
+  orders     Order[]  @relation("ShippingAddress")
+}
+model Payment {
+  id        String         @id @default(uuid())
+  order     Order          @relation(fields: [orderId], references: [id])
+  orderId   String         @unique
+
+  method    PaymentMethod
+  status    PaymentStatus
+  
+}
+
+// Add these 
+enum TrackingStatus {
+  ORDER_PLACED
+  ORDER_CONFIRMED
+  PICKUP_ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  DELIVERY_FAILED
+  RETURNED
+}
+
+// Add tracking model
+model OrderTracking {
+  id          String         @id @default(uuid())
+  order       Order          @relation(fields: [orderId], references: [id])
+  orderId     String
+  status      TrackingStatus
+  location    String?
+  description String?
+  timestamp   DateTime       @default(now())
+}
+
+// Update Order model
+model Order {
+  id         String   @id @default(uuid())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  orderItems OrderItem[]
+  tracking   OrderTracking[] // Add this field
+
+  payment   Payment?
+  
+  shippingAddress   CustomerInfo @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  shippingAddressId String
+
+  deliveryGuy DeliveryGuy? @relation(fields: [shipperId], references: [id])
+  shipperId   String?
+
+  trackingCode     String?        @unique  // Add tracking code
+  totalPrice      Float
+  totalItem       Int
+  status          OrderStatusEnum
+  note            String?
+
+  expectedDeliveryDate DateTime?
+  deliveredAt          DateTime?
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  orderItems  OrderItem[]
+}
+model OrderItem {
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   String
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+
+  quantity  Int
+  unitPrice Float
+  total     Float
+}
+
+model ThirdPartyDelivery {
+  id       String        @id @default(uuid())
+  name     String
+  contact  String?
+  shippers DeliveryGuy[]
+}
+
+model DeliveryGuy {
+  id           String             @id @default(uuid())
+  name         String
+  contact      String?
+  thirdParty   ThirdPartyDelivery @relation(fields: [thirdPartyId], references: [id])
+  thirdPartyId String
+  orders       Order[]
+}
+
