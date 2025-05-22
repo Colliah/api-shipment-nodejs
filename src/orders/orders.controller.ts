@@ -1,7 +1,7 @@
-import { Controller, Get,Body } from '@nestjs/common';
+import { Controller, Get, Body, Post } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { OrderDto } from './dto/create-order.dto';
+import { ApiOperation, ApiTags, ApiResponse } from '@nestjs/swagger';
+import { CreateOrderDto, OrderDto, OrderResponseDto } from './dto/create-order.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -14,4 +14,10 @@ export class OrdersController {
     return this.ordersService.getOrders();
   }
 
+  @Post()
+  @ApiOperation({ summary: 'Create new order' })
+  @ApiResponse({ status: 201, type: OrderResponseDto })
+  async createOrder(@Body() createOrderDto: CreateOrderDto) {
+    return this.ordersService.createOrder(createOrderDto);
+  }
 }

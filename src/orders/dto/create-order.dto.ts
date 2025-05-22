@@ -9,7 +9,7 @@ import {
   ValidateNested,
   IsDateString,
 } from 'class-validator';
-import { OrderStatusEnum, PaymentMethod,PaymentStatus } from '@prisma/client';
+import { OrderStatusEnum, PaymentMethod, PaymentStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 export class PaymentDto {
   @ApiProperty()
@@ -23,6 +23,24 @@ export class PaymentDto {
   @ApiProperty({ enum: PaymentStatus })
   @IsEnum(PaymentStatus)
   status: PaymentStatus;
+}
+export class ProductDto {
+  @ApiProperty()
+  @IsUUID()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  description?: string;
+
+  @ApiProperty()
+  @IsNumber()
+  price: number;
 }
 export class CustomerInfoDto {
   @ApiProperty()
@@ -51,12 +69,13 @@ export class OrderItemDto {
   id: string;
 
   @ApiProperty()
-  @IsString()
-  orderId: string;
-
-  @ApiProperty()
-  @IsString()
+  @IsUUID()
   productId: string;
+
+  @ApiProperty({ type: () => ProductDto })
+  @ValidateNested()
+  @Type(() => ProductDto)
+  product: ProductDto;
 
   @ApiProperty()
   @IsNumber()
@@ -70,10 +89,15 @@ export class OrderItemDto {
   @IsNumber()
   total: number;
 }
+
 export class OrderDto {
   @ApiProperty()
   @IsUUID()
   id: string;
+
+  @ApiProperty()
+  @IsUUID()
+  productId: string;
 
   @ApiProperty()
   @IsUUID()
@@ -126,6 +150,18 @@ export class OrderDto {
   @IsDateString()
   @IsOptional()
   deliveredAt?: Date;
+
+  @ApiProperty()
+  @IsNumber()
+  quantity: number;
+
+  @ApiProperty()
+  @IsNumber()
+  unitPrice: number;
+  
+  @ApiProperty()
+  @IsNumber()
+  total: number;
 }
 export class CreateOrderDto {
   @ApiProperty()
