@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsString,
   IsNumber,
@@ -223,3 +223,5 @@ export class OrderResponseDto {
   @ApiProperty({ type: [OrderDto] })
   orderItems: OrderDto[];
 }
+
+export class UpdateOrderDto extends PartialType(CreateOrderDto) {}
