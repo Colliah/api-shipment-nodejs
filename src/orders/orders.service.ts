@@ -40,7 +40,6 @@ export class OrdersService {
       paymentMethod,
       note,
       expectedDeliveryDate,
-      originAddress,
     } = createOrder;
 
     // Calculate order items and total
